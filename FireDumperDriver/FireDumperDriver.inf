@@ -1,0 +1,86 @@
+;
+; FireDumperDriver.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=FireDumperDriver.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+FireDumperDriver_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+FireDumperDriver.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%FireDumperDriver.DeviceDesc%=FireDumperDriver_Device, Root\FireDumperDriver ; TODO: edit hw-id
+
+[FireDumperDriver_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+FireDumperDriver.sys
+
+;-------------- Service installation
+[FireDumperDriver_Device.NT.Services]
+AddService = FireDumperDriver,%SPSVCINST_ASSOCSERVICE%, FireDumperDriver_Service_Inst
+
+; -------------- FireDumperDriver driver install sections
+[FireDumperDriver_Service_Inst]
+DisplayName    = %FireDumperDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\FireDumperDriver.sys
+
+;
+;--- FireDumperDriver_Device Coinstaller installation ------
+;
+
+[FireDumperDriver_Device.NT.CoInstallers]
+AddReg=FireDumperDriver_Device_CoInstaller_AddReg
+CopyFiles=FireDumperDriver_Device_CoInstaller_CopyFiles
+
+[FireDumperDriver_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[FireDumperDriver_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[FireDumperDriver_Device.NT.Wdf]
+KmdfService =  FireDumperDriver, FireDumperDriver_wdfsect
+[FireDumperDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "FireDumperDriver Installation Disk"
+FireDumperDriver.DeviceDesc = "FireDumperDriver Device"
+FireDumperDriver.SVCDESC = "FireDumperDriver Service"
